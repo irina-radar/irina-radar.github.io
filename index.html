@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Радар GitHub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f5f6fb; --surface:#ffffff; --surface-2:#f0f1f8; --line:#e3e5ef;
+  --text:#171a2c; --muted:#62677f; --faint:#9297ab;
+  --brand:#4f46e5; --brand-soft:#ecebff; --brand-ink:#3730a3;
+  --up:#0f9f6e; --up-soft:#e3f7ef; --warm:#d9730d; --warm-soft:#fdf0e1;
+  --flat:#5b6b8c; --flat-soft:#eceff6; --down:#c2410c; --down-soft:#fde9df;
+  --hero1:#1e1b4b; --hero2:#4338ca;
+  --shadow:0 1px 2px rgba(20,22,50,.05),0 4px 16px rgba(20,22,50,.06);
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0e1020; --surface:#171a2e; --surface-2:#1f2340; --line:#2a2f4f;
+  --text:#eceefb; --muted:#a3a8c6; --faint:#6f7495;
+  --brand:#8b84ff; --brand-soft:#26245a; --brand-ink:#c7c3ff;
+  --up:#34d399; --up-soft:#0f3a2c; --warm:#f5a524; --warm-soft:#3d2a0e;
+  --flat:#9aa8c7; --flat-soft:#262c45; --down:#fb8a5c; --down-soft:#3d1f13;
+  --hero1:#14123a; --hero2:#3b33a8; --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+}}
+:root[data-theme="dark"]{
+  --bg:#0e1020; --surface:#171a2e; --surface-2:#1f2340; --line:#2a2f4f;
+  --text:#eceefb; --muted:#a3a8c6; --faint:#6f7495;
+  --brand:#8b84ff; --brand-soft:#26245a; --brand-ink:#c7c3ff;
+  --up:#34d399; --up-soft:#0f3a2c; --warm:#f5a524; --warm-soft:#3d2a0e;
+  --flat:#9aa8c7; --flat-soft:#262c45; --down:#fb8a5c; --down-soft:#3d1f13;
+  --hero1:#14123a; --hero2:#3b33a8; --shadow:0 1px 2px rgba(0,0,0,.3),0 6px 20px rgba(0,0,0,.25);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.5 Manrope,system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+button,input,select{font:inherit;color:inherit}
+a{color:var(--brand)}
+.wrap{max-width:1200px;margin:0 auto;padding:0 16px}
+.hidden{display:none!important}
+
+/* вход */
+#login{min-height:100vh;display:grid;place-items:center;padding:16px;
+  background:radial-gradient(1200px 600px at 20% -10%,var(--hero2),transparent 60%),linear-gradient(160deg,var(--hero1),#0b0a24)}
+.login-card{width:100%;max-width:400px;background:var(--surface);border-radius:20px;padding:32px;box-shadow:0 20px 60px rgba(0,0,0,.35)}
+.login-card h1{margin:6px 0 6px;font-size:26px;letter-spacing:-.02em}
+.login-card p{margin:0 0 22px;color:var(--muted)}
+.kicker{font-size:12px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--brand)}
+.field{display:block;width:100%;padding:12px 14px;border:1.5px solid var(--line);border-radius:12px;background:var(--surface)}
+.field:focus{outline:none;border-color:var(--brand)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border:0;border-radius:12px;padding:12px 18px;font-weight:700;cursor:pointer;background:var(--brand);color:#fff}
+.btn.block{width:100%;margin-top:12px}
+.err{color:var(--down);font-size:14px;min-height:20px;margin-top:8px}
+
+/* шапка */
+header.hero{background:radial-gradient(900px 400px at 85% -20%,var(--hero2),transparent 70%),linear-gradient(135deg,var(--hero1),#211d5e);color:#fff;padding:28px 0 76px}
+.hero-top{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.hero h1{margin:6px 0 4px;font-size:clamp(26px,4vw,38px);letter-spacing:-.025em;line-height:1.1}
+.hero p{margin:0;color:#c9c8f5;max-width:560px}
+.hero .kicker{color:#a5a1ff}
+.date-chip{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);border-radius:14px;padding:10px 14px;font-size:13px;color:#d6d4ff}
+.date-chip select{background:transparent;border:0;color:#fff;font-weight:800;font-size:18px;padding:0;cursor:pointer}
+.date-chip select option{color:#111}
+.logout{background:none;border:0;color:#a5a1ff;font-size:13px;cursor:pointer;padding:4px 0 0}
+
+/* сводка */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:-52px}
+.stat{background:var(--surface);border-radius:16px;padding:16px 18px;box-shadow:var(--shadow)}
+.stat b{display:block;font-size:26px;letter-spacing:-.02em;line-height:1.2}
+.stat span{color:var(--muted);font-size:13px}
+@media(max-width:820px){.stats{grid-template-columns:repeat(2,1fr)}}
+
+/* вкладки */
+nav.tabs{display:flex;gap:4px;margin:24px 0 16px;border-bottom:1px solid var(--line);overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+nav.tabs button{background:none;border:0;padding:10px 14px;font-weight:700;color:var(--muted);cursor:pointer;border-bottom:2.5px solid transparent;margin-bottom:-1px;white-space:nowrap}
+nav.tabs button.on{color:var(--text);border-color:var(--brand)}
+
+/* фильтры */
+.panel{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);padding:16px}
+.flabel{font-size:12px;font-weight:700;color:var(--faint);text-transform:uppercase;letter-spacing:.08em;margin:0 0 8px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1.5px solid var(--line);background:var(--surface);border-radius:999px;padding:5px 12px;font-size:13.5px;font-weight:600;cursor:pointer;color:var(--muted)}
+.chip:hover{border-color:var(--brand)}
+.chip.on{background:var(--brand);border-color:var(--brand);color:#fff}
+.chip small{opacity:.7;font-weight:600;margin-left:3px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:14px}
+@media(max-width:820px){.frow{grid-template-columns:1fr}}
+.inrow{display:flex;gap:8px}
+.inrow .field{padding:8px 12px}
+.inrow select.field{width:auto;flex:0 0 auto}
+
+/* рейтинг */
+.board{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,440px);gap:16px;margin-top:16px;align-items:start}
+@media(max-width:980px){.board{grid-template-columns:1fr}}
+.listhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.seg{display:inline-flex;background:var(--surface-2);border-radius:10px;padding:3px;flex-wrap:wrap}
+.seg button{border:0;background:none;border-radius:8px;padding:6px 11px;font-size:13px;font-weight:700;color:var(--muted);cursor:pointer}
+.seg button.on{background:var(--surface);color:var(--text);box-shadow:var(--shadow)}
+.count{color:var(--muted);font-size:13.5px}
+.row{display:grid;grid-template-columns:30px minmax(0,1fr) 92px 96px;gap:12px;align-items:center;padding:12px 14px;border-radius:14px;cursor:pointer;background:var(--surface);border:1.5px solid transparent;margin-bottom:6px;box-shadow:var(--shadow)}
+.row:hover{border-color:var(--line)}
+.row.sel{border-color:var(--brand)}
+.rank{font-weight:800;color:var(--faint);text-align:center}
+.rname{font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rname .own{color:var(--muted);font-weight:500}
+.rmeta{display:flex;gap:6px;flex-wrap:wrap;margin-top:3px;font-size:12px;color:var(--muted);align-items:center}
+.tag{background:var(--surface-2);border-radius:6px;padding:1px 7px;font-weight:600}
+.new{background:var(--warm-soft);color:var(--warm);border-radius:6px;padding:1px 7px;font-weight:700}
+.st{border-radius:6px;padding:1px 7px;font-weight:700}
+.st-up{background:var(--up-soft);color:var(--up)}
+.st-steady{background:var(--brand-soft);color:var(--brand-ink)}
+.st-flat{background:var(--flat-soft);color:var(--flat)}
+.st-down{background:var(--down-soft);color:var(--down)}
+.rnum{text-align:right}
+.rnum b{display:block;font-size:16px;color:var(--up)}
+.rnum span{font-size:11.5px;color:var(--faint)}
+@media(max-width:560px){.row{grid-template-columns:24px minmax(0,1fr) 84px}.row svg{display:none}}
+
+/* карточка */
+.card{position:sticky;top:12px;background:var(--surface);border-radius:18px;box-shadow:var(--shadow);overflow:hidden}
+.card-h{padding:20px 20px 16px;border-bottom:1px solid var(--line)}
+.card-h h2{margin:6px 0 8px;font-size:21px;letter-spacing:-.015em;word-break:break-word}
+.card-b{padding:18px 20px 20px}
+.card h3{font-size:12px;font-weight:800;color:var(--faint);text-transform:uppercase;letter-spacing:.08em;margin:18px 0 8px}
+.card h3:first-child{margin-top:0}
+.purpose{font-size:15.5px;margin:0}
+.use{background:var(--up-soft);border-radius:12px;padding:12px 14px;margin:0;font-size:14.5px}
+.signal{color:var(--muted);font-size:14px;margin:8px 0 0}
+.kpis{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.kpi{background:var(--surface-2);border-radius:12px;padding:10px 12px}
+.kpi b{font-size:18px;display:block}
+.kpi span{font-size:12px;color:var(--muted);line-height:1.35;display:block}
+.bars{display:flex;gap:6px;align-items:flex-end;height:90px;margin-top:4px}
+.bar{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;height:100%}
+.bar i{display:block;width:100%;border-radius:8px 8px 3px 3px;background:var(--brand);opacity:.35;min-height:3px}
+.bar:last-child i{opacity:1}
+.bar span{font-size:11.5px;color:var(--muted);text-align:center;line-height:1.2}
+.bar b{font-size:12.5px}
+.path{border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:8px}
+.path h4{margin:0 0 2px;font-size:15px}
+.path p{margin:0 0 8px;color:var(--muted);font-size:13.5px}
+.prompt{background:var(--surface-2);border-radius:10px;padding:10px 12px;font-size:13.5px;margin-top:6px}
+.prompt-h{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:12.5px;margin-bottom:4px}
+.copy{border:0;background:var(--brand-soft);color:var(--brand-ink);border-radius:8px;padding:3px 10px;font-weight:700;font-size:12px;cursor:pointer}
+.gh{display:block;text-align:center;margin-top:16px;text-decoration:none}
+.note{font-size:12.5px;color:var(--faint);margin-top:12px}
+
+/* тренды */
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.tcard{background:var(--surface);border-radius:16px;box-shadow:var(--shadow);padding:16px;cursor:pointer;border:1.5px solid transparent}
+.tcard:hover{border-color:var(--brand)}
+.tcard h4{margin:0;font-size:16px}
+.tcard p{margin:2px 0 10px;color:var(--muted);font-size:13px;min-height:38px}
+.tnums{display:flex;justify-content:space-between;align-items:flex-end;gap:8px}
+.tnums b{font-size:20px}
+.tnums span{display:block;font-size:12px;color:var(--muted)}
+.tops{margin:10px 0 0;padding:0;list-style:none;font-size:13px;color:var(--muted)}
+.tops li{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+/* методология */
+.method{max-width:760px}
+.method .panel{margin-bottom:12px}
+.method h3{margin:0 0 6px}
+.method p,.method li{color:var(--muted)}
+footer{color:var(--faint);font-size:12.5px;padding:32px 0}
+.empty{padding:30px;text-align:center;color:var(--muted)}
+</style>
+</head>
+<body>
+
+<section id="login">
+  <form class="login-card" id="loginForm">
+    <div class="kicker">Радар GitHub</div>
+    <h1>Вход в дашборд</h1>
+    <p>Введите пароль команды. Браузер запомнит вход на 30 дней.</p>
+    <input class="field" type="password" id="pw" placeholder="Пароль" autocomplete="current-password" required>
+    <button class="btn block" id="loginBtn">Открыть</button>
+    <div class="err" id="err"></div>
+  </form>
+</section>
+
+<div id="app" class="hidden">
+  <header class="hero">
+    <div class="wrap hero-top">
+      <div>
+        <div class="kicker">Радар GitHub</div>
+        <h1>Что растёт в open source</h1>
+        <p>Самые быстрорастущие проекты за 90 дней и что из них можно забрать в работу.</p>
+      </div>
+      <div class="date-chip">
+        Замер от<br><select id="date"></select><br>
+        <button class="logout" id="logout">Выйти</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="stats" id="stats"></div>
+    <nav class="tabs" id="tabs">
+      <button data-tab="rating" class="on">Рейтинг проектов</button>
+      <button data-tab="trends">Тренды</button>
+      <button data-tab="method">Как считаем</button>
+    </nav>
+
+    <section id="tab-rating">
+      <div class="panel">
+        <div class="flabel">Тренд</div>
+        <div class="chips" id="fTrend"></div>
+        <div class="frow">
+          <div>
+            <div class="flabel">Динамика</div>
+            <div class="chips" id="fStatus"></div>
+          </div>
+          <div>
+            <div class="flabel">Поиск</div>
+            <div class="inrow">
+              <input class="field" id="q" placeholder="Название или описание">
+              <select class="field" id="fLang"></select>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="board">
+        <div>
+          <div class="listhead">
+            <div class="seg" id="sort">
+              <button data-k="g7">Неделя</button>
+              <button data-k="g30" class="on">Месяц</button>
+              <button data-k="g90">3 месяца</button>
+              <button data-k="accel">Ускорение</button>
+              <button data-k="stars">Всего ★</button>
+            </div>
+            <div class="seg" id="limit">
+              <button data-n="10">ТОП-10</button>
+              <button data-n="20" class="on">ТОП-20</button>
+              <button data-n="999">Все</button>
+            </div>
+          </div>
+          <div class="count" id="count"></div>
+          <div id="list" style="margin-top:10px"></div>
+        </div>
+        <aside class="card" id="card"></aside>
+      </div>
+    </section>
+
+    <section id="tab-trends" class="hidden">
+      <p class="count" style="margin:0 0 12px">Сравнение направлений: сколько проектов в радаре и сколько звёзд они суммарно набрали за месяц. Нажмите на тренд, чтобы увидеть его проекты.</p>
+      <div class="tgrid" id="tgrid"></div>
+    </section>
+
+    <section id="tab-method" class="hidden method">
+      <div class="panel"><h3>Откуда данные</h3><p>Каждую неделю скрипт собирает с GitHub самые быстрорастущие проекты (новые и старые, которые снова «выстрелили»). Историю звёзд по дням берём из открытой базы OSS Insight, поэтому рост считается по фактическим датам, а не на глаз.</p></div>
+      <div class="panel"><h3>Кто попадает в радар</h3><p>На каждую дату замера отбираются до 60 проектов с самым большим ростом за последние 30 дней, но не меньше 800 новых звёзд за месяц. Метка «Новый» значит, что неделю назад проекта в радаре не было.</p></div>
+      <div class="panel"><h3>Что значат цифры</h3><ul>
+        <li><b>Неделя / Месяц / 3 месяца</b>: сколько звёзд проект набрал за 7, 30 и 90 дней до даты замера.</li>
+        <li><b>Ускорение</b>: во сколько раз рост за последние 30 дней больше, чем за предыдущие 30. Больше 1 значит, что проект разгоняется.</li>
+        <li><b>Активные дни</b>: в сколько дней из последних 30 проекту ставили звёзды. Близко к 30 значит стабильный интерес, а не разовый всплеск.</li>
+      </ul></div>
+      <div class="panel"><h3>Динамика</h3><ul>
+        <li>Сравниваем последнюю неделю со средней неделей за месяц.</li>
+        <li><b>Ускоряется</b>: за последнюю неделю набрал на 30%+ больше, чем в среднем за неделю месяца.</li>
+        <li><b>Устойчивый рост</b>: неделя примерно как в среднем (80–130%).</li>
+        <li><b>Рост без ускорения</b>: ещё растёт, но медленнее среднего (50–80%).</li>
+        <li><b>Замедляется</b>: неделя меньше половины средней, пик интереса позади.</li>
+        <li>Если в прошлом месяце звёзд почти не было, вместо ускорения пишем «новый».</li>
+      </ul></div>
+      <div class="panel"><h3>Важно</h3><p>Звёзды показывают интерес, а не качество. Перед тем как внедрять проект, проверьте README, лицензию (можно ли использовать в коммерции) и дату последних обновлений.</p></div>
+    </section>
+    <footer id="foot"></footer>
+  </main>
+</div>
+
+<script>
+const TRENDS = {
+  "Оркестрация агентов":"Несколько ИИ-агентов работают вместе над задачей",
+  "Вертикальные агенты":"Готовые агенты под одну профессию или отрасль",
+  "Навыки и методологии":"Скиллы, промпты и подходы для Claude, Codex и др.",
+  "Подключения (MCP)":"Подключают ИИ к почте, таблицам, CRM и сервисам",
+  "Экономия и контекст":"Память ИИ, экономия токенов, работа с документами",
+  "Локальный ИИ":"Нейросети, которые работают на своём компьютере",
+  "Голос и аватары":"Озвучка, клонирование голоса, говорящие аватары",
+  "Видео и Reels":"Автомонтаж, нарезка и генерация роликов",
+  "Контент и дизайн":"Картинки, дизайн, тексты и посты",
+  "Продажи и CRM":"Воронки, аналитика звонков, ИИ-менеджеры",
+  "Боты и мессенджеры":"Боты для Telegram, WhatsApp, VK и др.",
+  "Автоматизация":"Связки сервисов и процессы без кода",
+  "Сбор данных и лиды":"Парсинг сайтов, контактов, вакансий, чатов",
+  "Веб и инструменты":"Браузерные агенты, поиск, утилиты для работы",
+  "Создание приложений":"Вайбкодинг, шаблоны сайтов и приложений",
+  "Бесплатные замены":"Открытые аналоги платных сервисов",
+  "Обучение":"Курсы, шпаргалки, ИИ с нуля",
+  "Прочее":"Всё, что не вошло в другие тренды"
+};
+const STATUS = {"ускоряется":"st-up","устойчивый рост":"st-steady","рост без ускорения":"st-flat","замедляется":"st-down"};
+const $ = s => document.querySelector(s);
+const fmt = n => n==null ? "—" : Math.round(n).toLocaleString("ru-RU");
+const fmtD = s => s.split("-").reverse().join(".");
+const esc = s => String(s??"").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const store = { get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}}, del(k){try{localStorage.removeItem(k)}catch(e){}} };
+const ub = b => Uint8Array.from(atob(b), c => c.charCodeAt(0));
+
+let D, S = {date:null, trend:null, status:null, lang:"", q:"", sort:"g30", limit:20, sel:null};
+
+async function decrypt(pw, enc){
+  const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveKey"]);
+  const key = await crypto.subtle.deriveKey({name:"PBKDF2", salt:ub(enc.salt), iterations:250000, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+  const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv:ub(enc.iv)}, key, ub(enc.ct));
+  return JSON.parse(new TextDecoder().decode(pt));
+}
+async function tryLogin(pw, silent){
+  try{
+    const enc = await (await fetch("data.enc.json", {cache:"no-store"})).json();
+    D = await decrypt(pw, enc);
+    store.set("radar_pw", JSON.stringify({pw, exp: Date.now()+30*864e5}));
+    start();
+  }catch(e){
+    if(!silent) $("#err").textContent = "Неверный пароль";
+    store.del("radar_pw");
+  }
+}
+$("#loginForm").onsubmit = e => { e.preventDefault(); $("#err").textContent=""; $("#loginBtn").textContent="Открываю…"; tryLogin($("#pw").value).finally(()=>$("#loginBtn").textContent="Открыть"); };
+$("#logout").onclick = () => { store.del("radar_pw"); location.reload(); };
+(() => { const s = store.get("radar_pw"); if(!s) return; try{ const o = JSON.parse(s); if(o.exp > Date.now()) tryLogin(o.pw, true); }catch(e){} })();
+
+function rowsFor(date){
+  const prev = D.dates[D.dates.indexOf(date)-1];
+  const was = new Set(prev ? D.radar[prev] : []);
+  return D.radar[date].map(n => { const r = D.repos[n]; return {...r, m:r.snap[date], isNew: prev ? !was.has(n) : false}; });
+}
+function filtered(){
+  const q = S.q.trim().toLowerCase();
+  return rowsFor(S.date).filter(r =>
+    (!S.trend || r.trend===S.trend) && (!S.status || r.m.status===S.status) && (!S.lang || r.lang===S.lang) &&
+    (!q || (r.name+" "+r.desc+" "+r.purpose).toLowerCase().includes(q))
+  ).sort((a,b) => (b.m[S.sort]??0) - (a.m[S.sort]??0));
+}
+function weekly(r){ return D.dates.filter(d => d<=S.date).slice(-10).map(d => r.snap[d].g7); }
+function spark(vals){
+  const w=92,h=30,mx=Math.max(...vals,1),step=w/Math.max(vals.length-1,1);
+  const pts = vals.map((v,i)=>`${(i*step).toFixed(1)},${(h-2-(v/mx)*(h-4)).toFixed(1)}`).join(" ");
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" aria-label="рост по неделям"><polyline points="${pts}" fill="none" stroke="var(--brand)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/></svg>`;
+}
+const SORTLBL = {g7:"за неделю", g30:"за месяц", g90:"за 3 месяца", accel:"ускорение", stars:"всего звёзд"};
+const sortVal = (r) => S.sort==="accel" ? (r.m.accel ? r.m.accel.toFixed(1).replace(".",",")+"×" : "новый") : (S.sort==="stars" ? fmt(r.m.stars) : "+"+fmt(r.m[S.sort]));
+
+function renderStats(){
+  const rows = rowsFor(S.date);
+  const byT = {}; rows.forEach(r => byT[r.trend] = (byT[r.trend]||0) + r.m.g30);
+  const topT = Object.entries(byT).sort((a,b)=>b[1]-a[1])[0];
+  $("#stats").innerHTML = [
+    [rows.length, "проектов в радаре"],
+    [rows.filter(r=>r.isNew).length, "новых за неделю"],
+    [rows.filter(r=>r.m.status==="ускоряется").length, "ускоряются"],
+    [topT ? esc(topT[0]) : "—", "самый горячий тренд"]
+  ].map(([b,s],i)=>`<div class="stat"><b style="${i===3?'font-size:19px':''}">${b}</b><span>${s}</span></div>`).join("");
+}
+function chipsHTML(items, cur, attr){
+  return items.map(([v,l,c]) => `<button class="chip ${cur===v?'on':''}" data-${attr}="${esc(v??'')}">${esc(l)}${c!=null?`<small>${c}</small>`:''}</button>`).join("");
+}
+function renderFilters(){
+  const rows = rowsFor(S.date);
+  const cnt = k => rows.reduce((o,r)=>(o[r[k]]=(o[r[k]]||0)+1,o),{});
+  const tc = cnt("trend");
+  $("#fTrend").innerHTML = chipsHTML([[null,"Все",rows.length], ...Object.keys(TRENDS).filter(t=>tc[t]).map(t=>[t,t,tc[t]])], S.trend, "trend");
+  const sc = rows.reduce((o,r)=>(o[r.m.status]=(o[r.m.status]||0)+1,o),{});
+  $("#fStatus").innerHTML = chipsHTML([[null,"Все"], ...Object.keys(STATUS).filter(s=>sc[s]).map(s=>[s, s[0].toUpperCase()+s.slice(1), sc[s]])], S.status, "status");
+  const langs = [...new Set(rows.map(r=>r.lang))].sort();
+  $("#fLang").innerHTML = `<option value="">Все языки</option>` + langs.map(l=>`<option ${S.lang===l?'selected':''}>${esc(l)}</option>`).join("");
+}
+function renderList(){
+  const all = filtered(), rows = all.slice(0, S.limit);
+  $("#count").textContent = `Найдено ${all.length} · сортировка: ${SORTLBL[S.sort]}`;
+  if(!rows.length){ $("#list").innerHTML = `<div class="panel empty">Ничего не нашлось. Сбросьте фильтры.</div>`; $("#card").innerHTML=""; return; }
+  if(!rows.find(r=>r.name===S.sel)) S.sel = rows[0].name;
+  $("#list").innerHTML = rows.map((r,i)=>{
+    const [own, nm] = r.name.split("/");
+    return `<div class="row ${r.name===S.sel?'sel':''}" data-name="${esc(r.name)}">
+      <div class="rank">${i+1}</div>
+      <div style="min-width:0"><div class="rname"><span class="own">${esc(own)}/</span>${esc(nm)}</div>
+        <div class="rmeta"><span class="tag">${esc(r.trend)}</span><span class="st ${STATUS[r.m.status]}">${r.m.status}</span>${r.isNew?'<span class="new">Новый</span>':''}<span>${esc(r.lang)}</span></div></div>
+      ${spark(weekly(r))}
+      <div class="rnum"><b>${sortVal(r)}</b><span>${SORTLBL[S.sort]}</span></div>
+    </div>`;}).join("");
+  renderCard();
+}
+function signal(m){
+  const month = m.accel==null ? "Проект свежий: почти весь рост пришёлся на последний месяц."
+    : m.accel>=1.5 ? `За месяц набрал в ${m.accel.toFixed(1).replace(".",",")} раза больше звёзд, чем за предыдущий.`
+    : m.accel>=0.9 ? "За месяц набрал примерно как за предыдущий." : "За месяц набрал меньше, чем за предыдущий.";
+  const week = {"ускоряется":"Последняя неделя сильнее средней: интерес растёт прямо сейчас.",
+    "устойчивый рост":"Последняя неделя на уровне средней: интерес стабильный.",
+    "рост без ускорения":"Последняя неделя слабее средней: рост замедляется.",
+    "замедляется":"Последняя неделя сильно слабее средней: пик интереса позади."}[m.status];
+  return month + " " + week;
+}
+function renderCard(){
+  const r = filtered().find(x=>x.name===S.sel); if(!r) return;
+  const m = r.m, mx = Math.max(m.w1, m.w2, m.w3, 1);
+  const P = (tool, text) => `<div class="prompt"><div class="prompt-h">${tool}<button class="copy" data-copy="${esc(text)}">Скопировать</button></div>${esc(text)}</div>`;
+  $("#card").innerHTML = `
+    <div class="card-h">
+      <div class="rmeta"><span class="tag">${esc(r.trend)}</span><span class="st ${STATUS[m.status]}">${m.status}</span>${r.isNew?'<span class="new">Новый в радаре</span>':''}</div>
+      <h2>${esc(r.name)}</h2>
+      <p class="purpose">${esc(r.purpose)}</p>
+      <p class="signal">${signal(m)}</p>
+    </div>
+    <div class="card-b">
+      ${r.use?`<h3>Как применить</h3><p class="use">${esc(r.use)}</p>`:''}
+      <h3>Цифры</h3>
+      <div class="kpis">
+        <div class="kpi"><b>${fmt(m.stars)} ★</b><span>всего звёзд</span></div>
+        <div class="kpi"><b>+${fmt(m.g7)}</b><span>новых звёзд за неделю</span></div>
+        <div class="kpi"><b>${m.accel?m.accel.toFixed(2).replace(".",",")+"×":"новый"}</b><span>рост к прошлому месяцу</span></div>
+        <div class="kpi"><b>${m.active} из 30</b><span>дней, когда ставили звёзды</span></div>
+      </div>
+      <h3>Рост по месяцам</h3>
+      <div class="bars">${[["3 мес. назад",m.w1],["2 мес. назад",m.w2],["последний",m.w3]].map(([l,v])=>`<div class="bar"><b>+${fmt(v)}</b><i style="height:${Math.max(3,v/mx*60)}px"></i><span>${l}</span></div>`).join("")}</div>
+      <h3>Что забрать</h3>
+      <div class="path"><h4>Взять идею</h4><p>Вытащить один полезный приём и применить в своей задаче.</p>
+        ${P("Claude", `Изучи проект ${r.name} (github.com/${r.name}). Найди в нём один повторяемый приём, полезный для моей задачи, и оформи его как инструкцию: что на входе, какие шаги, что на выходе.`)}
+        ${P("Codex", `Прочитай README проекта ${r.name}. Выдели один повторяемый приём, сделай минимальный рабочий шаблон под мою задачу и покажи, как проверить его на одном реальном примере.`)}
+      </div>
+      <div class="path"><h4>Освоить проект</h4><p>Если проект закрывает задачу целиком: первый результат за 30 минут.</p>
+        ${P("Claude", `Объясни простыми словами, что делает ${r.name} и кому он полезен. Что минимально нужно для запуска и какой первый сценарий на 30 минут подойдёт для моей задачи?`)}
+        ${P("Codex", `Помоги запустить ${r.name} для моей задачи. Составь короткий план установки и первый сценарий на 30 минут — только обязательные шаги.`)}
+      </div>
+      <a class="btn gh" href="${esc(r.url)}" target="_blank" rel="noopener">Открыть на GitHub ↗</a>
+      <div class="note">${r.license?`Лицензия: ${esc(r.license)} · `:''}Язык: ${esc(r.lang)} · Создан ${fmtD(r.created)}</div>
+    </div>`;
+}
+function renderTrends(){
+  const rows = rowsFor(S.date), g = {};
+  rows.forEach(r => (g[r.trend] ||= []).push(r));
+  $("#tgrid").innerHTML = Object.keys(TRENDS).filter(t=>g[t]).sort((a,b)=>g[b].reduce((s,r)=>s+r.m.g30,0)-g[a].reduce((s,r)=>s+r.m.g30,0)).map(t=>{
+    const rs = g[t].sort((a,b)=>b.m.g30-a.m.g30), sum = rs.reduce((s,r)=>s+r.m.g30,0);
+    const acc = rs.filter(r=>r.m.status==="ускоряется").length;
+    return `<div class="tcard" data-goto="${esc(t)}"><h4>${esc(t)}</h4><p>${esc(TRENDS[t])}</p>
+      <div class="tnums"><div><b>+${fmt(sum)}</b><span>звёзд за месяц</span></div><div style="text-align:right"><b>${rs.length}</b><span>проектов · ${acc} ускор.</span></div></div>
+      <ul class="tops">${rs.slice(0,3).map(r=>`<li>↗ ${esc(r.name)}</li>`).join("")}</ul></div>`;
+  }).join("");
+}
+function render(){ renderStats(); renderFilters(); renderList(); renderTrends(); }
+
+function start(){
+  $("#login").classList.add("hidden"); $("#app").classList.remove("hidden");
+  S.date = D.dates[D.dates.length-1];
+  $("#date").innerHTML = D.dates.slice().reverse().map(d=>`<option value="${d}">${fmtD(d)}</option>`).join("");
+  $("#foot").textContent = `Обновлено ${fmtD(D.updated)} · данные: GitHub, OSS Insight`;
+  render();
+}
+$("#date").onchange = e => { S.date = e.target.value; render(); };
+$("#fTrend").onclick = e => { const b=e.target.closest("[data-trend]"); if(!b) return; S.trend = b.dataset.trend||null; renderFilters(); renderList(); };
+$("#fStatus").onclick = e => { const b=e.target.closest("[data-status]"); if(!b) return; S.status = b.dataset.status||null; renderFilters(); renderList(); };
+$("#fLang").onchange = e => { S.lang = e.target.value; renderList(); };
+$("#q").oninput = e => { S.q = e.target.value; renderList(); };
+const seg = (id, key, conv) => $(id).onclick = e => { const b=e.target.closest("button"); if(!b) return; $(id).querySelectorAll("button").forEach(x=>x.classList.toggle("on", x===b)); S[key]=conv(b); renderList(); };
+seg("#sort","sort", b=>b.dataset.k); seg("#limit","limit", b=>+b.dataset.n);
+$("#list").onclick = e => { const r=e.target.closest(".row"); if(!r) return; S.sel=r.dataset.name; document.querySelectorAll(".row").forEach(x=>x.classList.toggle("sel",x===r)); renderCard(); if(innerWidth<980) $("#card").scrollIntoView({behavior:"smooth"}); };
+$("#card").onclick = e => { const b=e.target.closest("[data-copy]"); if(!b) return; navigator.clipboard.writeText(b.dataset.copy).then(()=>{ b.textContent="Скопировано ✓"; setTimeout(()=>b.textContent="Скопировать",1500); }); };
+$("#tabs").onclick = e => { const b=e.target.closest("button"); if(!b) return; document.querySelectorAll("#tabs button").forEach(x=>x.classList.toggle("on",x===b)); ["rating","trends","method"].forEach(t=>$("#tab-"+t).classList.toggle("hidden", t!==b.dataset.tab)); };
+$("#tgrid").onclick = e => { const c=e.target.closest("[data-goto]"); if(!c) return; S.trend=c.dataset.goto; $('#tabs [data-tab="rating"]').click(); renderFilters(); renderList(); };
+</script>
+</body>
+</html>
