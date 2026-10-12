@@ -139,7 +139,7 @@ nav.tabs button.on{color:var(--text);border-color:var(--brand)}
 .path{border:1.5px solid var(--line);border-radius:14px;padding:12px 14px;margin-top:8px}
 .path h4{margin:0 0 2px;font-size:15px}
 .path p{margin:0 0 8px;color:var(--muted);font-size:13.5px}
-.prompt{background:var(--surface-2);border-radius:10px;padding:10px 12px;font-size:13.5px;margin-top:6px}
+.prompt{white-space:pre-wrap;background:var(--surface-2);border-radius:10px;padding:10px 12px;font-size:13.5px;margin-top:6px}
 .prompt-h{display:flex;justify-content:space-between;align-items:center;font-weight:700;font-size:12.5px;margin-bottom:4px}
 .copy{border:0;background:var(--brand-soft);color:var(--brand-ink);border-radius:8px;padding:3px 10px;font-weight:700;font-size:12px;cursor:pointer}
 .gh{display:block;text-align:center;margin-top:16px;text-decoration:none}
@@ -185,7 +185,7 @@ footer{color:var(--faint);font-size:12.5px;padding:32px 0}
       <div>
         <div class="kicker">Радар GitHub</div>
         <h1>Что растёт в open source</h1>
-        <p>Самые быстрорастущие проекты за 90 дней и что из них можно забрать в работу.</p>
+        <p>Самые популярные ИИ-инструменты и скиллы по каждой теме, плюс новинки, которые быстро растут, — и что из них забрать в работу.</p>
       </div>
       <div class="date-chip">
         Замер от<br><select id="date"></select><br>
@@ -224,11 +224,11 @@ footer{color:var(--faint);font-size:12.5px;padding:32px 0}
         <div>
           <div class="listhead">
             <div class="seg" id="sort">
-              <button data-k="g7">Неделя</button>
-              <button data-k="g30" class="on">Месяц</button>
+              <button data-k="stars" class="on">Самые популярные</button>
+              <button data-k="g7">Рост за неделю</button>
+              <button data-k="g30">За месяц</button>
               <button data-k="g90">3 месяца</button>
               <button data-k="accel">Ускорение</button>
-              <button data-k="stars">Всего ★</button>
             </div>
             <div class="seg" id="limit">
               <button data-n="10">ТОП-10</button>
@@ -250,7 +250,12 @@ footer{color:var(--faint);font-size:12.5px;padding:32px 0}
 
     <section id="tab-method" class="hidden method">
       <div class="panel"><h3>Откуда данные</h3><p>Каждую неделю скрипт собирает с GitHub самые быстрорастущие проекты (новые и старые, которые снова «выстрелили»). Историю звёзд по дням берём из открытой базы OSS Insight, поэтому рост считается по фактическим датам, а не на глаз.</p></div>
-      <div class="panel"><h3>Кто попадает в радар</h3><p>На каждую дату замера отбираются до 60 проектов с самым большим ростом за последние 30 дней, но не меньше 800 новых звёзд за месяц. Метка «Новый» значит, что неделю назад проекта в радаре не было.</p></div>
+      <div class="panel"><h3>Кто попадает в радар</h3><ul>
+        <li><b>Самые популярные за всё время</b>: около 100 ИИ-проектов с наибольшим числом звёзд (от 15 000 до сотен тысяч), которые обновлялись в последние 3 месяца. Звёзды на GitHub — это и есть «лайки и скачивания»: другой общей оценки у проектов нет.</li>
+        <li><b>★ Must-have</b>: проверенные проекты, которые показываем всегда, например официальные скиллы и плагины Anthropic. Для них есть готовая команда установки.</li>
+        <li><b>Быстрорастущие</b>: до 60 проектов с самым большим ростом за 30 дней (не меньше 800 новых звёзд). Метка «Новый» значит, что неделю назад проекта среди них не было.</li>
+        <li>Тема «Прочее» (то, что не про работу с ИИ) по умолчанию скрыта, её можно открыть отдельной кнопкой.</li>
+      </ul></div>
       <div class="panel"><h3>Что значат цифры</h3><ul>
         <li><b>Неделя / Месяц / 3 месяца</b>: сколько звёзд проект набрал за 7, 30 и 90 дней до даты замера.</li>
         <li><b>Ускорение</b>: во сколько раз рост за последние 30 дней больше, чем за предыдущие 30. Больше 1 значит, что проект разгоняется.</li>
@@ -299,7 +304,7 @@ const esc = s => String(s??"").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",
 const store = { get(k){try{return localStorage.getItem(k)}catch(e){return null}}, set(k,v){try{localStorage.setItem(k,v)}catch(e){}}, del(k){try{localStorage.removeItem(k)}catch(e){}} };
 const ub = b => Uint8Array.from(atob(b), c => c.charCodeAt(0));
 
-let D, S = {date:null, trend:null, status:null, lang:"", q:"", sort:"g30", limit:20, sel:null};
+let D, S = {date:null, trend:null, status:null, lang:"", q:"", sort:"stars", limit:20, sel:null};
 
 async function decrypt(pw, enc){
   const base = await crypto.subtle.importKey("raw", new TextEncoder().encode(pw), "PBKDF2", false, ["deriveKey"]);
@@ -322,15 +327,19 @@ $("#loginForm").onsubmit = e => { e.preventDefault(); $("#err").textContent=""; 
 $("#logout").onclick = () => { store.del("radar_pw"); location.reload(); };
 (() => { const s = store.get("radar_pw"); if(!s) return; try{ const o = JSON.parse(s); if(o.exp > Date.now()) tryLogin(o.pw, true); }catch(e){} })();
 
+// В радаре: самые популярные за всё время (hits), обязательные (picks) и быстрорастущие на дату замера.
 function rowsFor(date){
   const prev = D.dates[D.dates.indexOf(date)-1];
-  const was = new Set(prev ? D.radar[prev] : []);
-  return D.radar[date].map(n => { const r = D.repos[n]; return {...r, m:r.snap[date], isNew: prev ? !was.has(n) : false}; });
+  const was = new Set(prev ? D.radar[prev] : []), fast = new Set(D.radar[date]), picks = new Set(D.picks||[]);
+  const names = [...new Set([...(D.picks||[]), ...(D.hits||[]), ...D.radar[date]])];
+  return names.filter(n => D.repos[n]).map(n => { const r = D.repos[n];
+    return {...r, m:r.snap[date], isPick: picks.has(n), isNew: prev && fast.has(n) ? !was.has(n) : false}; });
 }
+const MUST = "★ Must-have";
 function filtered(){
   const q = S.q.trim().toLowerCase();
   return rowsFor(S.date).filter(r =>
-    (!S.trend || r.trend===S.trend) && (!S.status || r.m.status===S.status) && (!S.lang || r.lang===S.lang) &&
+    (S.trend===MUST ? r.isPick : S.trend ? r.trend===S.trend : r.trend!=="Прочее") && (!S.status || r.m.status===S.status) && (!S.lang || r.lang===S.lang) &&
     (!q || (r.name+" "+r.desc+" "+r.purpose).toLowerCase().includes(q))
   ).sort((a,b) => (b.m[S.sort]??0) - (a.m[S.sort]??0));
 }
@@ -361,7 +370,7 @@ function renderFilters(){
   const rows = rowsFor(S.date);
   const cnt = k => rows.reduce((o,r)=>(o[r[k]]=(o[r[k]]||0)+1,o),{});
   const tc = cnt("trend");
-  $("#fTrend").innerHTML = chipsHTML([[null,"Все",rows.length], ...Object.keys(TRENDS).filter(t=>tc[t]).map(t=>[t,t,tc[t]])], S.trend, "trend");
+  $("#fTrend").innerHTML = chipsHTML([[null,"Все",rows.length-(tc["Прочее"]||0)], [MUST,MUST,rows.filter(r=>r.isPick).length], ...Object.keys(TRENDS).filter(t=>tc[t]).map(t=>[t,t,tc[t]])], S.trend, "trend");
   const sc = rows.reduce((o,r)=>(o[r.m.status]=(o[r.m.status]||0)+1,o),{});
   $("#fStatus").innerHTML = chipsHTML([[null,"Все"], ...Object.keys(STATUS).filter(s=>sc[s]).map(s=>[s, s[0].toUpperCase()+s.slice(1), sc[s]])], S.status, "status");
   const langs = [...new Set(rows.map(r=>r.lang))].sort();
@@ -377,7 +386,7 @@ function renderList(){
     return `<div class="row ${r.name===S.sel?'sel':''}" data-name="${esc(r.name)}">
       <div class="rank">${i+1}</div>
       <div style="min-width:0"><div class="rname"><span class="own">${esc(own)}/</span>${esc(nm)}</div>
-        <div class="rmeta"><span class="tag">${esc(r.trend)}</span><span class="st ${STATUS[r.m.status]}">${r.m.status}</span>${r.isNew?'<span class="new">Новый</span>':''}<span>${esc(r.lang)}</span></div></div>
+        <div class="rmeta">${r.isPick?'<span class="new">★ Must-have</span>':''}<span class="tag">${esc(r.trend)}</span>${S.sort!=="stars"?`<span class="tag">${fmt(r.m.stars)} ★</span>`:''}<span class="st ${STATUS[r.m.status]}">${r.m.status}</span>${r.isNew?'<span class="new">Новый</span>':''}</div></div>
       ${spark(weekly(r))}
       <div class="rnum"><b>${sortVal(r)}</b><span>${SORTLBL[S.sort]}</span></div>
     </div>`;}).join("");
@@ -406,6 +415,7 @@ function renderCard(){
     </div>
     <div class="card-b">
       ${r.use?`<h3>Как применить</h3><p class="use">${esc(r.use)}</p>`:''}
+      ${r.install?`<h3>Как установить</h3>${P("Вставить в Claude Code", r.install)}`:''}
       <h3>Цифры</h3>
       <div class="kpis">
         <div class="kpi"><b>${fmt(m.stars)} ★</b><span>всего звёзд</span></div>
@@ -432,7 +442,7 @@ function renderTrends(){
   const rows = rowsFor(S.date), g = {};
   rows.forEach(r => (g[r.trend] ||= []).push(r));
   $("#tgrid").innerHTML = Object.keys(TRENDS).filter(t=>g[t]).sort((a,b)=>g[b].reduce((s,r)=>s+r.m.g30,0)-g[a].reduce((s,r)=>s+r.m.g30,0)).map(t=>{
-    const rs = g[t].sort((a,b)=>b.m.g30-a.m.g30), sum = rs.reduce((s,r)=>s+r.m.g30,0);
+    const rs = g[t].sort((a,b)=>b.m.stars-a.m.stars), sum = rs.reduce((s,r)=>s+r.m.g30,0);
     const acc = rs.filter(r=>r.m.status==="ускоряется").length;
     return `<div class="tcard" data-goto="${esc(t)}"><h4>${esc(t)}</h4><p>${esc(TRENDS[t])}</p>
       <div class="tnums"><div><b>+${fmt(sum)}</b><span>звёзд за месяц</span></div><div style="text-align:right"><b>${rs.length}</b><span>проектов · ${acc} ускор.</span></div></div>
