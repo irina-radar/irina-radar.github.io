@@ -336,10 +336,11 @@ function rowsFor(date){
     return {...r, m:r.snap[date], isPick: picks.has(n), isNew: prev && fast.has(n) ? !was.has(n) : false}; });
 }
 const MUST = "★ Must-have";
+const tagsOf = r => r.trends || [r.trend];
 function filtered(){
   const q = S.q.trim().toLowerCase();
   return rowsFor(S.date).filter(r =>
-    (S.trend===MUST ? r.isPick : S.trend ? r.trend===S.trend : r.trend!=="Прочее") && (!S.status || r.m.status===S.status) && (!S.lang || r.lang===S.lang) &&
+    (S.trend===MUST ? r.isPick : S.trend ? tagsOf(r).includes(S.trend) : r.trend!=="Прочее") && (!S.status || r.m.status===S.status) && (!S.lang || r.lang===S.lang) &&
     (!q || (r.name+" "+r.desc+" "+r.purpose).toLowerCase().includes(q))
   ).sort((a,b) => (b.m[S.sort]??0) - (a.m[S.sort]??0));
 }
@@ -369,7 +370,7 @@ function chipsHTML(items, cur, attr){
 function renderFilters(){
   const rows = rowsFor(S.date);
   const cnt = k => rows.reduce((o,r)=>(o[r[k]]=(o[r[k]]||0)+1,o),{});
-  const tc = cnt("trend");
+  const tc = {}; rows.forEach(r => tagsOf(r).forEach(t => tc[t] = (tc[t]||0) + 1));
   $("#fTrend").innerHTML = chipsHTML([[null,"Все",rows.length-(tc["Прочее"]||0)], [MUST,MUST,rows.filter(r=>r.isPick).length], ...Object.keys(TRENDS).filter(t=>tc[t]).map(t=>[t,t,tc[t]])], S.trend, "trend");
   const sc = rows.reduce((o,r)=>(o[r.m.status]=(o[r.m.status]||0)+1,o),{});
   $("#fStatus").innerHTML = chipsHTML([[null,"Все"], ...Object.keys(STATUS).filter(s=>sc[s]).map(s=>[s, s[0].toUpperCase()+s.slice(1), sc[s]])], S.status, "status");
@@ -440,7 +441,7 @@ function renderCard(){
 }
 function renderTrends(){
   const rows = rowsFor(S.date), g = {};
-  rows.forEach(r => (g[r.trend] ||= []).push(r));
+  rows.forEach(r => tagsOf(r).forEach(t => (g[t] ||= []).push(r)));
   $("#tgrid").innerHTML = Object.keys(TRENDS).filter(t=>g[t]).sort((a,b)=>g[b].reduce((s,r)=>s+r.m.g30,0)-g[a].reduce((s,r)=>s+r.m.g30,0)).map(t=>{
     const rs = g[t].sort((a,b)=>b.m.stars-a.m.stars), sum = rs.reduce((s,r)=>s+r.m.g30,0);
     const acc = rs.filter(r=>r.m.status==="ускоряется").length;
